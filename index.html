@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>タイム・ゾーン時計</title>
-  <!-- 初期状態の favicon（JSで後から差し替え） -->
   <link id="favicon" rel="icon" href="icon-light.png" type="image/png" />
   <style>
     :root {
@@ -153,7 +152,7 @@
     let baseUtc = new Date(new Date().toISOString());
     let startTime = new Date();
     let currentLang = 'ja';
-    let currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    let currentTheme = 'light'; // 常にライトモードで開始
 
     function updateZones() {
       const now = new Date();
@@ -231,7 +230,6 @@
       applyTheme();
     });
 
-    // 初期設定
     applyTheme();
     updateZones();
     setInterval(updateZones, 1000);
