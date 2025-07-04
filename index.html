@@ -29,14 +29,14 @@
       transition: background 0.3s, color 0.3s;
     }
 
-    .theme-light {
-      background: var(--bg-light);
-      color: var(--text-light);
+    body.theme-light {
+      background: var(--bg-light, #f4fdf6);
+      color: var(--text-light, #1a3d2f);
     }
 
-    .theme-dark {
-      background: var(--bg-dark);
-      color: var(--text-dark);
+    body.theme-dark {
+      background: var(--bg-dark, #1a1a1a);
+      color: var(--text-dark, #e0fbe9);
     }
 
     h1 {
@@ -81,14 +81,14 @@
       transition: background 0.3s, color 0.3s;
     }
 
-    .theme-light .zone-card {
-      background-color: var(--card-light);
-      color: var(--text-light);
+    body.theme-light .zone-card {
+      background-color: var(--card-light, #d9efe0);
+      color: var(--text-light, #1a3d2f);
     }
 
-    .theme-dark .zone-card {
-      background-color: var(--card-dark);
-      color: var(--text-dark);
+    body.theme-dark .zone-card {
+      background-color: var(--card-dark, #2a2a2a);
+      color: var(--text-dark, #e0fbe9);
     }
 
     .zone-name {
@@ -118,31 +118,31 @@
 <body>
   <h1 id="main-title">タイム・ゾーン時計</h1>
   <div class="button-row">
-    <button id="langBtn">English</button>
-    <button id="themeBtn">🌙 ダークモード</button>
+    <button id="langBtn" aria-label="言語切替ボタン">English</button>
+    <button id="themeBtn" aria-label="テーマ切替ボタン">🌙 ダークモード</button>
   </div>
 
   <div class="zones">
-    <div class="zone-card" data-timezone="Asia/Tokyo" data-title-ja="日本 (東京)" data-title-en="Japan (Tokyo)">
-      <div class="zone-name">日本 (東京)</div>
+    <div class="zone-card" data-timezone="Asia/Tokyo" data-lang-ja="日本 (東京)" data-lang-en="Japan (Tokyo)">
+      <div class="zone-name" data-lang-ja="日本 (東京)" data-lang-en="Japan (Tokyo)">日本 (東京)</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
-    <div class="zone-card" data-timezone="America/Los_Angeles" data-title-ja="アメリカ西海岸（ロサンゼルス）" data-title-en="US West Coast (Los Angeles)">
-      <div class="zone-name">アメリカ西海岸（ロサンゼルス）</div>
+    <div class="zone-card" data-timezone="America/Los_Angeles" data-lang-ja="アメリカ西海岸（ロサンゼルス）" data-lang-en="US West Coast (Los Angeles)">
+      <div class="zone-name" data-lang-ja="アメリカ西海岸（ロサンゼルス）" data-lang-en="US West Coast (Los Angeles)">アメリカ西海岸（ロサンゼルス）</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
-    <div class="zone-card" data-timezone="America/New_York" data-title-ja="アメリカ東部（ニューヨーク）" data-title-en="US East Coast (New York)">
-      <div class="zone-name">アメリカ東部（ニューヨーク）</div>
+    <div class="zone-card" data-timezone="America/New_York" data-lang-ja="アメリカ東部（ニューヨーク）" data-lang-en="US East Coast (New York)">
+      <div class="zone-name" data-lang-ja="アメリカ東部（ニューヨーク）" data-lang-en="US East Coast (New York)">アメリカ東部（ニューヨーク）</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
-    <div class="zone-card" data-timezone="Etc/UTC" data-title-ja="世界標準時 (UTC)" data-title-en="Universal Time (UTC)">
-      <div class="zone-name">世界標準時 (UTC)</div>
+    <div class="zone-card" data-timezone="Etc/UTC" data-lang-ja="世界標準時 (UTC)" data-lang-en="Universal Time (UTC)">
+      <div class="zone-name" data-lang-ja="世界標準時 (UTC)" data-lang-en="Universal Time (UTC)">世界標準時 (UTC)</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
@@ -150,11 +150,30 @@
   </div>
 
   <script>
-    let baseUtc = new Date(new Date().toISOString());
-    let startTime = new Date();
+    // 基準時刻（UTC）を固定し、そこから経過時間を足す方式でずれ防止
+    const baseUtc = new Date(new Date().toISOString());
+    const startTime = new Date();
 
     let currentLang = localStorage.getItem('lang') || 'ja';
     let currentTheme = localStorage.getItem('theme') || 'light';
+
+    // UTCオフセットを ±HH:MM 表示で返す関数
+    function getOffsetString(date, tz) {
+      try {
+        // tz時間のdate文字列を取得しDateオブジェクト化
+        const tzDateStr = date.toLocaleString('en-US', { timeZone: tz });
+        const tzDate = new Date(tzDateStr);
+        // 差分を分で計算（UTC - tz時間）
+        const diff = (tzDate - date) / 60000;
+        const sign = diff <= 0 ? '+' : '-';
+        const absMin = Math.abs(diff);
+        const h = String(Math.floor(absMin / 60)).padStart(2, '0');
+        const m = String(absMin % 60).padStart(2, '0');
+        return `UTC${sign}${h}:${m}`;
+      } catch {
+        return '';
+      }
+    }
 
     function updateZones() {
       const now = new Date();
@@ -171,7 +190,6 @@
             minute: '2-digit',
             second: '2-digit',
             hour12: false,
-            timeZoneName: 'short'
           });
 
           const dateFormatter = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-US', {
@@ -182,13 +200,13 @@
             weekday: 'short'
           });
 
-          const parts = timeFormatter.formatToParts(currentUtc);
-          const timeStr = parts.filter(p => p.type !== 'timeZoneName').map(p => p.value).join('');
-          const tzAbbr = parts.find(p => p.type === 'timeZoneName')?.value || '';
+          const timeStr = timeFormatter.format(currentUtc);
+          const dateStr = dateFormatter.format(currentUtc);
+          const offsetStr = getOffsetString(currentUtc, tz);
 
           card.querySelector('.time').textContent = timeStr;
-          card.querySelector('.date').textContent = dateFormatter.format(currentUtc);
-          card.querySelector('.zone-offset').textContent = tzAbbr;
+          card.querySelector('.date').textContent = dateStr;
+          card.querySelector('.zone-offset').textContent = offsetStr;
         } catch {
           card.querySelector('.time').textContent = 'N/A';
           card.querySelector('.date').textContent = '';
@@ -219,9 +237,13 @@
     function updateLanguage() {
       document.getElementById('langBtn').textContent = currentLang === 'ja' ? 'English' : '日本語';
       document.getElementById('main-title').textContent = currentLang === 'ja' ? 'タイム・ゾーン時計' : 'Time Zone Clock';
+      document.documentElement.lang = currentLang === 'ja' ? 'ja' : 'en';
+
       document.querySelectorAll('.zone-card').forEach(card => {
-        const title = currentLang === 'ja' ? card.dataset.titleJa : card.dataset.titleEn;
-        card.querySelector('.zone-name').textContent = title;
+        const zoneNameElem = card.querySelector('.zone-name');
+        const langKey = `lang${currentLang.toUpperCase()}`;
+        const title = zoneNameElem.dataset[langKey];
+        if(title) zoneNameElem.textContent = title;
       });
       updateThemeButtonLabel();
     }
@@ -238,11 +260,17 @@
       applyTheme();
     });
 
+    // 時刻の更新を requestAnimationFrame で行う
+    function tick() {
+      updateZones();
+      requestAnimationFrame(tick);
+    }
+
     // 初期設定
     applyTheme();
     updateLanguage();
-    updateZones();
-    setInterval(updateZones, 1000);
+    tick();
+
   </script>
 </body>
 </html>
