@@ -150,23 +150,26 @@
   </div>
 
   <script>
-    // 基準時刻（UTC）を固定し、そこから経過時間を足す方式でずれ防止
-    const baseUtc = new Date(new Date().toISOString());
-    const startTime = new Date();
-
     let currentLang = localStorage.getItem('lang') || 'ja';
     let currentTheme = localStorage.getItem('theme') || 'light';
 
     // UTCオフセットを ±HH:MM 表示で返す関数
     function getOffsetString(date, tz) {
       try {
-        // tz時間のdate文字列を取得しDateオブジェクト化
-        const tzDateStr = date.toLocaleString('en-US', { timeZone: tz });
-        const tzDate = new Date(tzDateStr);
-        // 差分を分で計算（UTC - tz時間）
-        const diff = (tzDate - date) / 60000;
-        const sign = diff <= 0 ? '+' : '-';
-        const absMin = Math.abs(diff);
+        // Intl.DateTimeFormatのtimeZoneName:'shortOffset'は対応が限定的なのでfallback有り
+        const dtf = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' });
+        const parts = dtf.formatToParts(date);
+        const offsetPart = parts.find(p => p.type === 'timeZoneName');
+        if (offsetPart && offsetPart.value && offsetPart.value !== 'GMT') {
+          return offsetPart.value; // 例: "GMT+9"
+        }
+
+        // fallback: 差分を分で計算してUTC±hh:mm形式に
+        const localStr = date.toLocaleString('en-US', { timeZone: tz, hour12: false });
+        const localDate = new Date(localStr);
+        const diffMin = (localDate - date) / 60000;
+        const sign = diffMin <= 0 ? '+' : '-';
+        const absMin = Math.abs(diffMin);
         const h = String(Math.floor(absMin / 60)).padStart(2, '0');
         const m = String(absMin % 60).padStart(2, '0');
         return `UTC${sign}${h}:${m}`;
@@ -177,8 +180,6 @@
 
     function updateZones() {
       const now = new Date();
-      const elapsed = now - startTime;
-      const currentUtc = new Date(baseUtc.getTime() + elapsed);
 
       document.querySelectorAll('.zone-card').forEach(card => {
         const tz = card.dataset.timezone;
@@ -200,9 +201,9 @@
             weekday: 'short'
           });
 
-          const timeStr = timeFormatter.format(currentUtc);
-          const dateStr = dateFormatter.format(currentUtc);
-          const offsetStr = getOffsetString(currentUtc, tz);
+          const timeStr = timeFormatter.format(now);
+          const dateStr = dateFormatter.format(now);
+          const offsetStr = getOffsetString(now, tz);
 
           card.querySelector('.time').textContent = timeStr;
           card.querySelector('.date').textContent = dateStr;
@@ -260,13 +261,13 @@
       applyTheme();
     });
 
-    // 時刻の更新を requestAnimationFrame で行う
+    // ループで常に最新時刻を表示
     function tick() {
       updateZones();
       requestAnimationFrame(tick);
     }
 
-    // 初期設定
+    // 初期処理
     applyTheme();
     updateLanguage();
     tick();
