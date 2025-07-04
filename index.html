@@ -1,3 +1,4 @@
+<!-- version3.3 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -30,13 +31,13 @@
     }
 
     body.theme-light {
-      background: var(--bg-light, #f4fdf6);
-      color: var(--text-light, #1a3d2f);
+      background: var(--bg-light);
+      color: var(--text-light);
     }
 
     body.theme-dark {
-      background: var(--bg-dark, #1a1a1a);
-      color: var(--text-dark, #e0fbe9);
+      background: var(--bg-dark);
+      color: var(--text-dark);
     }
 
     h1 {
@@ -82,13 +83,13 @@
     }
 
     body.theme-light .zone-card {
-      background-color: var(--card-light, #d9efe0);
-      color: var(--text-light, #1a3d2f);
+      background-color: var(--card-light);
+      color: var(--text-light);
     }
 
     body.theme-dark .zone-card {
-      background-color: var(--card-dark, #2a2a2a);
-      color: var(--text-dark, #e0fbe9);
+      background-color: var(--card-dark);
+      color: var(--text-dark);
     }
 
     .zone-name {
@@ -124,25 +125,25 @@
 
   <div class="zones">
     <div class="zone-card" data-timezone="Asia/Tokyo" data-lang-ja="日本 (東京)" data-lang-en="Japan (Tokyo)">
-      <div class="zone-name" data-lang-ja="日本 (東京)" data-lang-en="Japan (Tokyo)">日本 (東京)</div>
+      <div class="zone-name">日本 (東京)</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
     <div class="zone-card" data-timezone="America/Los_Angeles" data-lang-ja="アメリカ西海岸（ロサンゼルス）" data-lang-en="US West Coast (Los Angeles)">
-      <div class="zone-name" data-lang-ja="アメリカ西海岸（ロサンゼルス）" data-lang-en="US West Coast (Los Angeles)">アメリカ西海岸（ロサンゼルス）</div>
+      <div class="zone-name">アメリカ西海岸（ロサンゼルス）</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
     <div class="zone-card" data-timezone="America/New_York" data-lang-ja="アメリカ東部（ニューヨーク）" data-lang-en="US East Coast (New York)">
-      <div class="zone-name" data-lang-ja="アメリカ東部（ニューヨーク）" data-lang-en="US East Coast (New York)">アメリカ東部（ニューヨーク）</div>
+      <div class="zone-name">アメリカ東部（ニューヨーク）</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
     <div class="zone-card" data-timezone="UTC" data-lang-ja="世界標準時 (UTC)" data-lang-en="Universal Time (UTC)">
-      <div class="zone-name" data-lang-ja="世界標準時 (UTC)" data-lang-en="Universal Time (UTC)">世界標準時 (UTC)</div>
+      <div class="zone-name">世界標準時 (UTC)</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
@@ -156,15 +157,17 @@
     // UTCオフセットを ±HH:MM 表示で返す関数
     function getOffsetString(date, tz) {
       try {
-        // Intl.DateTimeFormatのtimeZoneName:'shortOffset'は対応が限定的なのでfallback有り
+        if(tz === 'UTC') {
+          return 'UTC+00:00';
+        }
+
         const dtf = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' });
         const parts = dtf.formatToParts(date);
         const offsetPart = parts.find(p => p.type === 'timeZoneName');
         if (offsetPart && offsetPart.value && offsetPart.value !== 'GMT') {
-          return offsetPart.value; // 例: "GMT+9"
+          return offsetPart.value;
         }
 
-        // fallback: 差分を分で計算してUTC±hh:mm形式に
         const localStr = date.toLocaleString('en-US', { timeZone: tz, hour12: false });
         const localDate = new Date(localStr);
         const diffMin = (localDate - date) / 60000;
@@ -261,17 +264,14 @@
       applyTheme();
     });
 
-    // ループで常に最新時刻を表示
     function tick() {
       updateZones();
       requestAnimationFrame(tick);
     }
 
-    // 初期処理
     applyTheme();
     updateLanguage();
     tick();
-
   </script>
 </body>
 </html>
