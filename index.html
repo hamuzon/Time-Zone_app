@@ -1,277 +1,244 @@
-<!-- version3.3 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>タイム・ゾーン時計</title>
-  <meta name="description" content="タイムゾーンを表示するプログラムです" />
-  <link id="favicon" rel="icon" href="icon-light.png" type="image/png" />
+  <title>WORLDtime</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <link rel="icon" href="icon-light.png" type="image/png" />
   <style>
     :root {
-      --bg-light: #f4fdf6;
-      --card-light: #d9efe0;
-      --text-light: #1a3d2f;
-
-      --bg-dark: #1a1a1a;
-      --card-dark: #2a2a2a;
-      --text-dark: #e0fbe9;
+      --md-sys-color-primary: #6750A4;
+      --md-sys-color-on-primary: #FFFFFF;
+      --md-sys-color-surface: #ECE6F0;
+      --md-sys-color-on-surface: #1C1B1F;
+      --md-sys-color-error: #B3261E;
+      --md-sys-color-outline: #79747E;
     }
 
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Roboto', sans-serif;
       margin: 0;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: start;
-      min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    body.theme-light {
-      background: var(--bg-light);
-      color: var(--text-light);
-    }
-
-    body.theme-dark {
-      background: var(--bg-dark);
-      color: var(--text-dark);
+      background: linear-gradient(to bottom right, #ECE6F0, #D3CCE3);
+      color: var(--md-sys-color-on-surface);
+      padding: 1rem;
     }
 
     h1 {
-      font-size: 2.2rem;
-      margin-bottom: 1rem;
       text-align: center;
+      font-size: 2rem;
+      color: var(--md-sys-color-primary);
+      margin-bottom: 1rem;
     }
 
-    .button-row {
-      margin-bottom: 2rem;
+    .controls {
       display: flex;
-      gap: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1rem;
     }
 
-    button {
-      padding: 0.5rem 1rem;
+    select, button {
       font-size: 1rem;
+      padding: 0.6rem 1rem;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      background: #4caf50;
-      color: white;
-      transition: background 0.3s;
+      transition: background-color 0.3s ease;
+    }
+
+    select {
+      background: white;
+      color: var(--md-sys-color-on-surface);
+      border: 1px solid var(--md-sys-color-outline);
+      min-width: 200px;
+    }
+
+    button {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
     }
 
     button:hover {
-      background: #45a049;
+      background: #7F67BE;
     }
 
-    .zones {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-      width: 100%;
-      max-width: 1000px;
+    .timezone-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
     }
 
-    .zone-card {
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      transition: background 0.3s, color 0.3s;
+    .timezone {
+      background: white;
+      padding: 1rem;
+      border-radius: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 250px;
+      position: relative;
     }
 
-    body.theme-light .zone-card {
-      background-color: var(--card-light);
-      color: var(--text-light);
-    }
-
-    body.theme-dark .zone-card {
-      background-color: var(--card-dark);
-      color: var(--text-dark);
-    }
-
-    .zone-name {
-      font-size: 1.3rem;
+    .label {
+      font-weight: 600;
       margin-bottom: 0.5rem;
-      font-weight: bold;
-    }
-
-    .zone-offset, .date {
-      font-size: 1rem;
-      margin-bottom: 0.3rem;
+      text-align: center;
+      word-break: break-word;
     }
 
     .time {
-      font-size: 2rem;
       font-family: monospace;
-      font-weight: bold;
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
     }
 
-    @media (max-width: 600px) {
-      .time {
-        font-size: 1.5rem;
-      }
+    .remove-button {
+      background: var(--md-sys-color-error);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    .remove-button:hover {
+      background: #9B1B17;
+    }
+
+    .error-message {
+      color: var(--md-sys-color-error);
+      text-align: center;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1 id="main-title">タイム・ゾーン時計</h1>
-  <div class="button-row">
-    <button id="langBtn" aria-label="言語切替ボタン">English</button>
-    <button id="themeBtn" aria-label="テーマ切替ボタン">🌙 ダークモード</button>
+  <h1>WORLD-time</h1>
+
+  <div class="controls">
+    <select id="timezone-select"></select>
+    <button id="add-button">追加</button>
   </div>
 
-  <div class="zones">
-    <div class="zone-card" data-timezone="Asia/Tokyo" data-lang-ja="日本 (東京)" data-lang-en="Japan (Tokyo)">
-      <div class="zone-name">日本 (東京)</div>
-      <div class="zone-offset"></div>
-      <div class="date"></div>
-      <div class="time"></div>
-    </div>
-    <div class="zone-card" data-timezone="America/Los_Angeles" data-lang-ja="アメリカ西海岸（ロサンゼルス）" data-lang-en="US West Coast (Los Angeles)">
-      <div class="zone-name">アメリカ西海岸（ロサンゼルス）</div>
-      <div class="zone-offset"></div>
-      <div class="date"></div>
-      <div class="time"></div>
-    </div>
-    <div class="zone-card" data-timezone="America/New_York" data-lang-ja="アメリカ東部（ニューヨーク）" data-lang-en="US East Coast (New York)">
-      <div class="zone-name">アメリカ東部（ニューヨーク）</div>
-      <div class="zone-offset"></div>
-      <div class="date"></div>
-      <div class="time"></div>
-    </div>
-    <div class="zone-card" data-timezone="UTC" data-lang-ja="世界標準時 (UTC)" data-lang-en="Universal Time (UTC)">
-      <div class="zone-name">世界標準時 (UTC)</div>
-      <div class="zone-offset"></div>
-      <div class="date"></div>
-      <div class="time"></div>
-    </div>
-  </div>
+  <div class="timezone-container" id="timezones"></div>
+
+  <div class="error-message" id="error-message"></div>
 
   <script>
-    let currentLang = localStorage.getItem('lang') || 'ja';
-    let currentTheme = localStorage.getItem('theme') || 'light';
+    const timezoneSelect = document.getElementById("timezone-select");
+    const timezonesContainer = document.getElementById("timezones");
+    const errorMessage = document.getElementById("error-message");
 
-    // UTCオフセットを ±HH:MM 表示で返す関数
-    function getOffsetString(date, tz) {
+    // 時計更新用配列。{id, tz}のオブジェクトを保持
+    const clocksToUpdate = [];
+
+    let baseUtcDate = null;
+    let basePerformanceTime = null;
+
+    // タイムゾーン一覧をselectに追加
+    const allTimezones = Intl.supportedValuesOf("timeZone");
+    allTimezones.forEach(tz => {
+      const option = document.createElement("option");
+      option.value = tz;
+      option.textContent = tz;
+      timezoneSelect.appendChild(option);
+    });
+
+    // ネットからUTC時間を同期
+    async function syncTimeFromInternet() {
       try {
-        if(tz === 'UTC') {
-          return 'UTC+00:00';
-        }
-
-        const dtf = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' });
-        const parts = dtf.formatToParts(date);
-        const offsetPart = parts.find(p => p.type === 'timeZoneName');
-        if (offsetPart && offsetPart.value && offsetPart.value !== 'GMT') {
-          return offsetPart.value;
-        }
-
-        const localStr = date.toLocaleString('en-US', { timeZone: tz, hour12: false });
-        const localDate = new Date(localStr);
-        const diffMin = (localDate - date) / 60000;
-        const sign = diffMin <= 0 ? '+' : '-';
-        const absMin = Math.abs(diffMin);
-        const h = String(Math.floor(absMin / 60)).padStart(2, '0');
-        const m = String(absMin % 60).padStart(2, '0');
-        return `UTC${sign}${h}:${m}`;
-      } catch {
-        return '';
+        const res = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
+        if (!res.ok) throw new Error("Fetch failed");
+        const data = await res.json();
+        baseUtcDate = new Date(data.utc_datetime);
+        basePerformanceTime = performance.now();
+        errorMessage.textContent = "";
+      } catch (e) {
+        baseUtcDate = new Date();
+        basePerformanceTime = performance.now();
+        errorMessage.textContent = "※ インターネットからの時間取得に失敗しました。端末の時間を使用します。";
       }
     }
 
-    function updateZones() {
-      const now = new Date();
+    // タイムゾーンを追加
+    function addTimezone() {
+      const tz = timezoneSelect.value;
 
-      document.querySelectorAll('.zone-card').forEach(card => {
-        const tz = card.dataset.timezone;
+      // 一意ID作成（タイムゾーン名＋現在時刻）
+      const uniqueId = "tz_" + tz.replace(/[^a-zA-Z0-9]/g, "_") + "_" + Date.now();
 
-        try {
-          const timeFormatter = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-US', {
-            timeZone: tz,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-          });
+      // 時計用要素作成
+      const container = document.createElement("div");
+      container.className = "timezone";
+      container.id = uniqueId;
 
-          const dateFormatter = new Intl.DateTimeFormat(currentLang === 'ja' ? 'ja-JP' : 'en-US', {
-            timeZone: tz,
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            weekday: 'short'
-          });
+      container.innerHTML = `
+        <div class="label">${tz}</div>
+        <div class="time" id="${uniqueId}-time">--:--:--</div>
+        <button class="remove-button" aria-label="削除 ${tz}" title="削除 ${tz}">×</button>
+      `;
 
-          const timeStr = timeFormatter.format(now);
-          const dateStr = dateFormatter.format(now);
-          const offsetStr = getOffsetString(now, tz);
+      // 削除ボタンイベント
+      container.querySelector(".remove-button").addEventListener("click", () => {
+        removeTimezone(uniqueId);
+      });
 
-          card.querySelector('.time').textContent = timeStr;
-          card.querySelector('.date').textContent = dateStr;
-          card.querySelector('.zone-offset').textContent = offsetStr;
-        } catch {
-          card.querySelector('.time').textContent = 'N/A';
-          card.querySelector('.date').textContent = '';
-          card.querySelector('.zone-offset').textContent = '';
-        }
+      timezonesContainer.appendChild(container);
+
+      // 更新配列に追加
+      clocksToUpdate.push({ id: uniqueId + "-time", tz: tz });
+    }
+
+    // タイムゾーン削除
+    function removeTimezone(id) {
+      // 配列から該当時計を除外
+      const idx = clocksToUpdate.findIndex(obj => obj.id === id + "-time");
+      if (idx !== -1) clocksToUpdate.splice(idx, 1);
+
+      // 要素削除
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    // 時計更新処理
+    function updateClocks() {
+      if (!baseUtcDate || basePerformanceTime === null) return;
+
+      const elapsed = performance.now() - basePerformanceTime;
+      const nowUtc = new Date(baseUtcDate.getTime() + elapsed);
+
+      clocksToUpdate.forEach(clock => {
+        const formatter = new Intl.DateTimeFormat("ja-JP", {
+          timeZone: clock.tz,
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+        const formattedTime = formatter.format(nowUtc);
+        const el = document.getElementById(clock.id);
+        if (el) el.textContent = formattedTime;
       });
     }
 
-    function updateFavicon() {
-      const favicon = document.getElementById('favicon');
-      favicon.href = currentTheme === 'dark' ? 'icon-dark.png' : 'icon-light.png';
-    }
-
-    function applyTheme() {
-      document.body.className = `theme-${currentTheme}`;
-      updateFavicon();
-      updateThemeButtonLabel();
-    }
-
-    function updateThemeButtonLabel() {
-      const isDark = currentTheme === 'dark';
-      document.getElementById('themeBtn').textContent =
-        currentLang === 'ja'
-          ? (isDark ? '☀️ ライトモード' : '🌙 ダークモード')
-          : (isDark ? '☀️ Light Mode' : '🌙 Dark Mode');
-    }
-
-    function updateLanguage() {
-      document.getElementById('langBtn').textContent = currentLang === 'ja' ? 'English' : '日本語';
-      document.getElementById('main-title').textContent = currentLang === 'ja' ? 'タイム・ゾーン時計' : 'Time Zone Clock';
-      document.documentElement.lang = currentLang === 'ja' ? 'ja' : 'en';
-
-      document.querySelectorAll('.zone-card').forEach(card => {
-        const zoneNameElem = card.querySelector('.zone-name');
-        const langKey = `lang${currentLang.toUpperCase()}`;
-        const title = zoneNameElem.dataset[langKey];
-        if(title) zoneNameElem.textContent = title;
-      });
-      updateThemeButtonLabel();
-    }
-
-    document.getElementById('langBtn').addEventListener('click', () => {
-      currentLang = currentLang === 'ja' ? 'en' : 'ja';
-      localStorage.setItem('lang', currentLang);
-      updateLanguage();
+    // 初期化
+    window.addEventListener("DOMContentLoaded", async () => {
+      timezoneSelect.value = "Asia/Tokyo";
+      await syncTimeFromInternet();
+      addTimezone();
+      setInterval(updateClocks, 1000);
     });
 
-    document.getElementById('themeBtn').addEventListener('click', () => {
-      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-      localStorage.setItem('theme', currentTheme);
-      applyTheme();
-    });
-
-    function tick() {
-      updateZones();
-      requestAnimationFrame(tick);
-    }
-
-    applyTheme();
-    updateLanguage();
-    tick();
+    document.getElementById("add-button").addEventListener("click", addTimezone);
   </script>
 </body>
 </html>
