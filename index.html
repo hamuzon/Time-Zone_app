@@ -6,15 +6,38 @@
   <title>タイム・ゾーン時計</title>
   <link id="favicon" rel="icon" href="icon-light.png" type="image/png" />
   <style>
+    :root {
+      --bg-body: linear-gradient(135deg, #d9ead3, #e7f1e9);
+      --text-main: #1a3d2f;
+      --text-title: #145214;
+      --card-bg: #c3e0c8;
+      --card-shadow: rgba(0, 121, 61, 0.25);
+      --card-hover-bg: #a0c7a0;
+      --card-hover-shadow: rgba(0, 121, 61, 0.45);
+      --text-zone: #145214;
+      --text-sub: #405c33;
+      --text-time: #264d25;
+    }
+    body.theme-dark {
+      --bg-body: linear-gradient(135deg, #121212, #1e1e1e);
+      --text-main: #e0e0e0;
+      --text-title: #81c784;
+      --card-bg: #2c2c2c;
+      --card-shadow: rgba(0, 0, 0, 0.5);
+      --card-hover-bg: #3a3a3a;
+      --card-hover-shadow: rgba(0, 0, 0, 0.7);
+      --text-zone: #a5d6a7;
+      --text-sub: #81c784;
+      --text-time: #66bb6a;
+    }
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     body {
-      background: linear-gradient(135deg, #d9ead3, #e7f1e9);
-      color: #1a3d2f;
+      background: var(--bg-body);
+      color: var(--text-main);
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       flex-direction: column;
@@ -28,19 +51,17 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: 1.5rem;
-      color: #145214;
+      color: var(--text-title);
       letter-spacing: 0.1em;
       text-align: center;
       text-transform: uppercase;
       font-family: "Montserrat", sans-serif;
       text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
     }
-
     .button-row {
       margin-bottom: 2rem;
       display: flex;
@@ -48,7 +69,6 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-
     button {
       padding: 0.5rem 1rem;
       font-size: 1rem;
@@ -59,11 +79,9 @@
       color: white;
       transition: background 0.3s;
     }
-
     button:hover {
       background: #45a049;
     }
-
     .zones {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -72,12 +90,11 @@
       width: 100%;
       max-width: 960px;
     }
-
     .zone-card {
-      background-color: #c3e0c8;
+      background-color: var(--card-bg);
       border-radius: 12px;
       padding: 1.5rem 2rem;
-      box-shadow: 0 4px 8px rgba(0, 121, 61, 0.25);
+      box-shadow: 0 4px 8px var(--card-shadow);
       text-align: center;
       transition: background-color 0.3s ease, box-shadow 0.3s ease;
       width: 100%;
@@ -88,63 +105,52 @@
       justify-content: center;
       cursor: default;
     }
-
     .zone-card:hover {
-      background-color: #a0c7a0;
-      box-shadow: 0 6px 12px rgba(0, 121, 61, 0.45);
+      background-color: var(--card-hover-bg);
+      box-shadow: 0 6px 12px var(--card-hover-shadow);
     }
-
     .zone-name {
       font-size: 1.4rem;
       margin-bottom: 0.2rem;
       font-weight: 700;
-      color: #145214;
+      color: var(--text-zone);
     }
-
     .zone-offset,
     .date {
       font-size: 1rem;
-      color: #405c33;
+      color: var(--text-sub);
       margin-bottom: 0.4rem;
     }
-
     .time {
       font-size: 2.2rem;
       font-family: monospace;
       font-weight: bold;
-      color: #264d25;
+      color: var(--text-time);
       white-space: nowrap;
     }
-
     @media screen and (max-width: 768px) {
       body {
         padding: 1rem;
         justify-content: flex-start;
       }
-
       h1 {
         font-size: 2rem;
       }
-
       .zones {
         grid-template-columns: 1fr;
         gap: 1.5rem;
       }
-
       .zone-card {
         min-height: 140px;
         padding: 1rem 1.5rem;
       }
-
       .zone-name {
         font-size: 1.1rem;
       }
-
       .zone-offset,
       .date {
         font-size: 0.9rem;
       }
-
       .time {
         font-size: 1.6rem;
       }
