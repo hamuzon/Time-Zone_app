@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>404 - ページが見つかりません</title>
+  <title>404 Not Found - ページが見つかりません</title>
   <link id="favicon" rel="icon" href="icon-light.png" type="image/png" />
   <style>
     :root {
@@ -116,7 +116,7 @@
   </style>
 </head>
 <body>
-  <h1 id="main-title">404 エラー</h1>
+  <h1 id="main-title">404 Not Found エラー</h1>
 
   <div class="button-row">
     <button id="langBtn">English</button>
@@ -158,8 +158,8 @@
     function updateLanguage() {
       const isJa = currentLang === 'ja';
       document.documentElement.lang = isJa ? 'ja' : 'en';
-      document.title = isJa ? '404 - ページが見つかりません' : '404 - Page Not Found';
-      document.getElementById('main-title').textContent = isJa ? '404 エラー' : '404 Error';
+      document.title = isJa ? '404 Not Found - ページが見つかりません' : '404 - Page Not Found';
+      document.getElementById('main-title').textContent = isJa ? '404 Not Found エラー' : '404 Not Found Error';
       document.getElementById('notFoundText').textContent = isJa ? 'ページが見つかりません' : 'Page Not Found';
       document.getElementById('notFoundSubText').textContent = isJa
         ? 'お探しのページは存在しないか、移動された可能性があります。'

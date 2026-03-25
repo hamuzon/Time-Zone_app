@@ -6,48 +6,47 @@
   <title>タイム・ゾーン時計</title>
   <link id="favicon" rel="icon" href="icon-light.png" type="image/png" />
   <style>
-    :root {
-      --bg-light: #f4fdf6;
-      --card-light: #d9efe0;
-      --text-light: #1a3d2f;
-
-      --bg-dark: #1a1a1a;
-      --card-dark: #2a2a2a;
-      --text-dark: #e0fbe9;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
+      background: linear-gradient(135deg, #d9ead3, #e7f1e9);
+      color: #1a3d2f;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: start;
+      justify-content: center;
       min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .theme-light {
-      background: var(--bg-light);
-      color: var(--text-light);
-    }
-
-    .theme-dark {
-      background: var(--bg-dark);
-      color: var(--text-dark);
+      padding: 2rem;
+      text-align: center;
+      -webkit-user-select: none; 
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     h1 {
-      font-size: 2.2rem;
-      margin-bottom: 1rem;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #145214;
+      letter-spacing: 0.1em;
       text-align: center;
+      text-transform: uppercase;
+      font-family: "Montserrat", sans-serif;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
     }
 
     .button-row {
       margin-bottom: 2rem;
       display: flex;
       gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     button {
@@ -67,55 +66,94 @@
 
     .zones {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      justify-items: center;
       width: 100%;
-      max-width: 1000px;
+      max-width: 960px;
     }
 
     .zone-card {
+      background-color: #c3e0c8;
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 4px 8px rgba(0, 121, 61, 0.25);
       text-align: center;
-      transition: background 0.3s, color 0.3s;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+      max-width: 440px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: default;
     }
 
-    .theme-light .zone-card {
-      background-color: var(--card-light);
-      color: var(--text-light);
-    }
-
-    .theme-dark .zone-card {
-      background-color: var(--card-dark);
-      color: var(--text-dark);
+    .zone-card:hover {
+      background-color: #a0c7a0;
+      box-shadow: 0 6px 12px rgba(0, 121, 61, 0.45);
     }
 
     .zone-name {
-      font-size: 1.3rem;
-      margin-bottom: 0.5rem;
-      font-weight: bold;
+      font-size: 1.4rem;
+      margin-bottom: 0.2rem;
+      font-weight: 700;
+      color: #145214;
     }
 
-    .zone-offset, .date {
+    .zone-offset,
+    .date {
       font-size: 1rem;
-      margin-bottom: 0.3rem;
+      color: #405c33;
+      margin-bottom: 0.4rem;
     }
 
     .time {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-family: monospace;
       font-weight: bold;
+      color: #264d25;
+      white-space: nowrap;
     }
 
-    @media (max-width: 600px) {
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 1rem;
+        justify-content: flex-start;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .zones {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .zone-card {
+        min-height: 140px;
+        padding: 1rem 1.5rem;
+      }
+
+      .zone-name {
+        font-size: 1.1rem;
+      }
+
+      .zone-offset,
+      .date {
+        font-size: 0.9rem;
+      }
+
       .time {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
       }
     }
   </style>
 </head>
 <body>
   <h1 id="main-title">タイム・ゾーン時計</h1>
+
   <div class="button-row">
     <button id="langBtn">English</button>
     <button id="themeBtn">🌙 ダークモード</button>
@@ -128,18 +166,21 @@
       <div class="date"></div>
       <div class="time"></div>
     </div>
+
     <div class="zone-card" data-timezone="America/Los_Angeles" data-title-ja="アメリカ西海岸（ロサンゼルス）" data-title-en="US West Coast (Los Angeles)">
       <div class="zone-name">アメリカ西海岸（ロサンゼルス）</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
+
     <div class="zone-card" data-timezone="America/New_York" data-title-ja="アメリカ東部（ニューヨーク）" data-title-en="US East Coast (New York)">
       <div class="zone-name">アメリカ東部（ニューヨーク）</div>
       <div class="zone-offset"></div>
       <div class="date"></div>
       <div class="time"></div>
     </div>
+
     <div class="zone-card" data-timezone="Etc/UTC" data-title-ja="世界標準時 (UTC)" data-title-en="Universal Time (UTC)">
       <div class="zone-name">世界標準時 (UTC)</div>
       <div class="zone-offset"></div>
