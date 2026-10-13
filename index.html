@@ -196,16 +196,15 @@
   </div>
 
   <script>
-    let baseUtc = new Date(new Date().toISOString());
-    let startTime = new Date();
-
     let currentLang = localStorage.getItem('lang') || 'ja';
     let currentTheme = localStorage.getItem('theme') || 'light';
 
+    function nowTime() {
+      return new Date();
+    }
+
     function updateZones() {
-      const now = new Date();
-      const elapsed = now - startTime;
-      const currentUtc = new Date(baseUtc.getTime() + elapsed);
+      const currentUtc = nowTime();
 
       document.querySelectorAll('.zone-card').forEach(card => {
         const tz = card.dataset.timezone;
@@ -287,8 +286,18 @@
     // 初期設定
     applyTheme();
     updateLanguage();
+
     updateZones();
-    setInterval(updateZones, 1000);
+
+    let lastSec = -1;
+    function rafLoop() {
+      const now = nowTime();
+      const sec = now.getSeconds();
+      if (sec !== lastSec) { lastSec = sec; updateZones(); }
+      requestAnimationFrame(rafLoop);
+    }
+    requestAnimationFrame(rafLoop);
   </script>
 </body>
 </html>
+
