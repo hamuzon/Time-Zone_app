@@ -39,30 +39,25 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Inject Google Analytics 4
+      - name: Inject Google Analytics 4 and hostname normalization
         run: |
-          # google*.html を除外し、既存GA4タグがないHTMLに挿入
+          # google*.html を除外し、既存タグがないHTMLの<head>直後に挿入
           find . -type f -name "*.html" -not -name "google*.html" \
-            -exec sh -c '
-              for file do
-                if ! grep -q "googletagmanager.com/gtag/js" "$file"; then
-                  sed -i "/<head[^>]*>/a\\
-          <!-- Google tag (gtag.js) -->\\
-          <script async src=\"https://www.googletagmanager.com/gtag/js?id=$GA_MEASUREMENT_ID\"></script>\\
-          <script>\\
-          window.dataLayer = window.dataLayer || [];\\
-          function gtag(){dataLayer.push(arguments);}\\
-          gtag(\"js\", new Date());\\
-          gtag(\"config\", \"$GA_MEASUREMENT_ID\");\\
-          </script>" "$file"
-                fi
-              done
-            ' sh {} +
-
-      - name: Inject FQDN normalization script
-        run: |
-          # 全てのHTMLファイルの<head>直後に挿入
-          find . -type f -name "*.html" -not -name "google*.html" -exec sed -i '/<head[^>]*>/a \  <script>if(window.location.hostname.endsWith(".")){window.location.replace(window.location.href.replace(window.location.hostname,window.location.hostname.slice(0,-1)));}</script>' {} +
+            -exec perl -0pi -e '
+              my $measurement_id = $ENV{GA_MEASUREMENT_ID};
+              my $insertion = "";
+              if (!/googletagmanager\.com\/gtag\/js/i) {
+                $insertion .= qq{<!-- Google tag (gtag.js) -->\n<script async src="https://www.googletagmanager.com/gtag/js?id=$measurement_id"></script>\n<script>\nwindow.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag("js", new Date());\ngtag("config", "$measurement_id");\n</script>\n};
+              }
+              if (!/window\.location\.hostname\.endsWith/i) {
+                $insertion .= q{<script>if(window.location.hostname.endsWith(".")){window.location.replace(window.location.href.replace(window.location.hostname,window.location.hostname.slice(0,-1)));}</script>};
+              }
+              if (length $insertion) {
+                s{(<head\b[^>]*>)}{$1\n$insertion}i
+                  or die "No <head> element found in $ARGV\n";
+              }
+              warn "Processed $ARGV\n";
+            ' {} +
 
       - name: Remove sensitive files from deployment artifact
         run: |
