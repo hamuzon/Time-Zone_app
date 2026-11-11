@@ -45,8 +45,9 @@ jobs:
           find . -type f -name "*.html" -not -name "google*.html" \
             -exec perl -0pi -e '
               my $measurement_id = $ENV{GA_MEASUREMENT_ID};
+              die "GA_MEASUREMENT_ID is not set\n" unless $measurement_id;
               my $insertion = "";
-              if (!/googletagmanager\.com\/gtag\/js/i) {
+              if (!/\Q$measurement_id\E/) {
                 $insertion .= qq{<!-- Google tag (gtag.js) -->\n<script async src="https://www.googletagmanager.com/gtag/js?id=$measurement_id"></script>\n<script>\nwindow.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag("js", new Date());\ngtag("config", "$measurement_id");\n</script>\n};
               }
               if (!/window\.location\.hostname\.endsWith/i) {
@@ -56,8 +57,10 @@ jobs:
                 s{(<head\b[^>]*>)}{$1\n$insertion}i
                   or die "No <head> element found in $ARGV\n";
               }
-              warn "Processed $ARGV\n";
-            ' {} +
+              die "Google Analytics ID $measurement_id missing from $ARGV\n"
+                unless /\Q$measurement_id\E/;
+              warn "Verified Google Analytics in $ARGV\n";
+            ' {} \;
 
       - name: Remove sensitive files from deployment artifact
         run: |
